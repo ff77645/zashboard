@@ -3,6 +3,7 @@
     ref="modalRef"
     class="modal"
     @close="isOpen = false"
+    v-if="isOpen"
   >
     <form
       method="dialog"
@@ -18,7 +19,6 @@
       </form>
       <div
         :class="['max-h-[90dvh] overflow-y-auto max-md:max-h-[70dvh]', noPadding ? 'p-0' : 'p-4']"
-        v-if="isOpen"
       >
         <slot></slot>
       </div>
@@ -28,17 +28,23 @@
 
 <script setup lang="ts">
 import { XMarkIcon } from '@heroicons/vue/24/outline'
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 
 const modalRef = ref<HTMLDialogElement>()
 const isOpen = defineModel<boolean>()
 defineProps<{ noPadding?: boolean }>()
 
-watch(isOpen, (value) => {
-  if (value) {
-    modalRef.value?.showModal()
-  } else {
-    modalRef.value?.close()
-  }
-})
+watch(
+  isOpen,
+  (value) => {
+    if (value) {
+      nextTick(() => {
+        modalRef.value?.showModal()
+      })
+    }
+  },
+  {
+    immediate: true,
+  },
+)
 </script>
